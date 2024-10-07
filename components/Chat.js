@@ -2,12 +2,12 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 export default function Chat({ route }) {
-    const { name, backgroundColor } = route.params; // Проверка переданных параметров
+    const { name, backgroundColor } = route.params;
 
     return (
-        <View style={[styles.container, { backgroundColor }]}>  {/* Использование цвета фона */}
+        <View style={[styles.container, { backgroundColor }]}>
             <Text style={styles.chatTitle}>Chat Screen</Text>
-            <Text style={styles.userName}>Hello, {name}!</Text>  {/* Приветствие с именем */}
+            <Text style={styles.userName}>Hello, {name}!</Text>
         </View>
     );
 }
