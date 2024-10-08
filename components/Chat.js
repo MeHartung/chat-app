@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, Platform, Text } from 'react-native';
 import { GiftedChat, Bubble } from "react-native-gifted-chat";
 
 const Chat = ({ route, navigation }) => {
-    const { name, backgroundColor } = route.params; // Получаем цвет фона из параметров маршрута
+    const { name, backgroundColor = "#fff" } = route.params; // Set default background color if not provided
 
-    // State to hold messages
     const [messages, setMessages] = useState([]);
 
     // Function to send new messages
@@ -13,12 +12,11 @@ const Chat = ({ route, navigation }) => {
         setMessages(previousMessages => GiftedChat.append(previousMessages, newMessages));
     }
 
-    // useEffect to load initial messages
     useEffect(() => {
         setMessages([
             {
                 _id: 1,
-                text: 'Hello developer',
+                text: 'Hello developer', // Ensure that this text renders correctly
                 createdAt: new Date(),
                 user: {
                     _id: 2,
@@ -28,29 +26,35 @@ const Chat = ({ route, navigation }) => {
             },
             {
                 _id: 2,
-                text: 'You have entered the chat',
+                text: 'You have entered the chat', // System message text
                 createdAt: new Date(),
-                system: true, // System message
+                system: true,
             },
         ]);
     }, []);
 
-    // Set the chat screen title with the user's name
     useEffect(() => {
         navigation.setOptions({ title: name });
     }, [name]);
 
-    // Function to customize the appearance of message bubbles
     const renderBubble = (props) => {
         return (
             <Bubble
                 {...props}
                 wrapperStyle={{
                     right: {
-                        backgroundColor: "#000", // Sender's bubble color (black)
+                        backgroundColor: "#000",
                     },
                     left: {
-                        backgroundColor: "#FFF", // Receiver's bubble color (white)
+                        backgroundColor: "#FFF",
+                    },
+                }}
+                textStyle={{
+                    right: {
+                        color: '#fff', // Ensure right bubble text is white
+                    },
+                    left: {
+                        color: '#000', // Ensure left bubble text is black
                     },
                 }}
             />
@@ -58,23 +62,20 @@ const Chat = ({ route, navigation }) => {
     };
 
     return (
-        <View style={[styles.container, { backgroundColor }]}> {/* Применяем цвет фона */}
-            {/* Using the GiftedChat component for chat functionality */}
+        <View style={[styles.container, { backgroundColor }]}>
             <GiftedChat
                 messages={messages}
-                renderBubble={renderBubble} // Customizing message bubbles
-                onSend={newMessages => onSend(newMessages)} // Sending new messages
+                renderBubble={renderBubble} // Customize message bubbles
+                onSend={newMessages => onSend(newMessages)} // Send new messages
                 user={{
                     _id: 1, // Current user ID
                 }}
             />
-            {/* Handle keyboard appearance for different platforms */}
             {Platform.OS === 'android' ? <KeyboardAvoidingView behavior="height" /> : null}
         </View>
     );
 }
 
-// Styles for the chat component
 const styles = StyleSheet.create({
     container: {
         flex: 1,
