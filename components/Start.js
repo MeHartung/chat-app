@@ -15,7 +15,7 @@ export default function Start() {
         <ImageBackground
             source={require('../images/bgImage.png')}
             style={styles.backgroundImage}
-            resizeMode="cover"  // исправляем, чтобы изображение правильно растягивалось
+            resizeMode="cover"
         >
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
                 <Text style={styles.title}>Welcome to the Chat App</Text>
@@ -56,16 +56,14 @@ const styles = StyleSheet.create({
     backgroundImage: {
         flex: 1,
         justifyContent: 'center',
-        width: '100%',   // исправлено, чтобы фон покрывал весь экран
-        height: '100%',  // исправлено, чтобы фон покрывал весь экран
+        width: '100%',
+        height: '100%',
     },
     container: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.8)', // прозрачный белый фон
         padding: 20,
-        borderRadius: 10,
         width: '85%',
         alignSelf: 'center',
     },
