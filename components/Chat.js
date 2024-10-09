@@ -1,36 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, KeyboardAvoidingView, Platform, Text } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { GiftedChat, Bubble } from "react-native-gifted-chat";
+import { collection, addDoc, onSnapshot, query, orderBy } from "firebase/firestore";
 
-const Chat = ({ route, navigation }) => {
-    const { name, backgroundColor = "#fff" } = route.params; // Set default background color if not provided
+const Chat = ({ route, navigation, db }) => {
+    const { name, backgroundColor = "#fff", userID } = route.params;
 
     const [messages, setMessages] = useState([]);
 
-    // Function to send new messages
+    // Function to send new messages to Firestore
     const onSend = (newMessages) => {
-        setMessages(previousMessages => GiftedChat.append(previousMessages, newMessages));
-    }
+        addDoc(collection(db, "messages"), newMessages[0]);
+    };
 
+    // Fetch messages in real-time from Firestore
     useEffect(() => {
-        setMessages([
-            {
-                _id: 1,
-                text: 'Hello developer', // Ensure that this text renders correctly
-                createdAt: new Date(),
-                user: {
-                    _id: 2,
-                    name: 'React Native',
-                    avatar: 'https://placeimg.com/140/140/any',
-                },
-            },
-            {
-                _id: 2,
-                text: 'You have entered the chat', // System message text
-                createdAt: new Date(),
-                system: true,
-            },
-        ]);
+        const q = query(collection(db, "messages"), orderBy("createdAt", "desc"));
+        const unsubMessages = onSnapshot(q, (snapshot) => {
+            const messagesFirestore = snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    _id: doc.id,
+                    ...data,
+                    createdAt: data.createdAt.toDate(),
+                };
+            });
+            setMessages(messagesFirestore);
+        });
+
+        return () => {
+            unsubMessages();
+        };
     }, []);
 
     useEffect(() => {
@@ -51,10 +51,10 @@ const Chat = ({ route, navigation }) => {
                 }}
                 textStyle={{
                     right: {
-                        color: '#fff', // Ensure right bubble text is white
+                        color: '#fff',
                     },
                     left: {
-                        color: '#000', // Ensure left bubble text is black
+                        color: '#000',
                     },
                 }}
             />
@@ -63,18 +63,24 @@ const Chat = ({ route, navigation }) => {
 
     return (
         <View style={[styles.container, { backgroundColor }]}>
-            <GiftedChat
-                messages={messages}
-                renderBubble={renderBubble} // Customize message bubbles
-                onSend={newMessages => onSend(newMessages)} // Send new messages
-                user={{
-                    _id: 1, // Current user ID
-                }}
-            />
-            {Platform.OS === 'android' ? <KeyboardAvoidingView behavior="height" /> : null}
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+            >
+                <GiftedChat
+                    messages={messages}
+                    renderBubble={renderBubble}
+                    onSend={newMessages => onSend(newMessages)}
+                    user={{
+                        _id: userID,
+                        name: name,
+                    }}
+                />
+            </KeyboardAvoidingView>
         </View>
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {
