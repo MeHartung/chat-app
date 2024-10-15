@@ -8,7 +8,7 @@ export default function Start() {
     const [backgroundColor, setBackgroundColor] = useState('#fff');
     const navigation = useNavigation();
 
-    // Function to handle anonymous login
+
     const signInUser = () => {
         const auth = getAuth();
         signInAnonymously(auth)

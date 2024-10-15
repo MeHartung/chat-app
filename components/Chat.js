@@ -3,18 +3,21 @@ import { View, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { GiftedChat, Bubble, InputToolbar } from "react-native-gifted-chat";
 import { collection, addDoc, onSnapshot, query, orderBy } from "firebase/firestore";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CustomActions from './CustomActions';
+import { ref, getStorage } from 'firebase/storage';
 
 const Chat = ({ route, navigation, db, isConnected }) => {
     const { name, backgroundColor = "#fff", userID } = route.params;
     const [messages, setMessages] = useState([]);
+    const storage = getStorage();
 
-    // Load cached messages when offline
+
     const loadCachedMessages = async () => {
         const cachedMessages = await AsyncStorage.getItem('messages') || '[]';
         setMessages(JSON.parse(cachedMessages));
     };
 
-    // Cache messages locally
+
     const cacheMessages = async (messagesToCache) => {
         try {
             await AsyncStorage.setItem('messages', JSON.stringify(messagesToCache));
@@ -38,24 +41,26 @@ const Chat = ({ route, navigation, db, isConnected }) => {
                     };
                 });
                 setMessages(messagesFirestore);
-                cacheMessages(messagesFirestore); // Cache when online
+                cacheMessages(messagesFirestore);
             });
 
             return () => unsubMessages();
         } else {
-            loadCachedMessages(); // Load cached messages when offline
+            loadCachedMessages();
         }
     }, [isConnected]);
+
 
     const onSend = (newMessages) => {
         addDoc(collection(db, "messages"), newMessages[0]);
     };
 
-    // Render the InputToolbar based on connection status
+
     const renderInputToolbar = (props) => {
         if (isConnected) return <InputToolbar {...props} />;
-        return null; // Hide toolbar when offline
+        return null;
     };
+
 
     const renderBubble = (props) => {
         return (
@@ -73,6 +78,11 @@ const Chat = ({ route, navigation, db, isConnected }) => {
         );
     };
 
+
+    const renderCustomActions = (props) => {
+        return <CustomActions storage={storage} onSend={onSend} user={{ _id: userID, name }} {...props} />;
+    };
+
     return (
         <View style={[styles.container, { backgroundColor }]}>
             <KeyboardAvoidingView
@@ -83,8 +93,9 @@ const Chat = ({ route, navigation, db, isConnected }) => {
                 <GiftedChat
                     messages={messages}
                     renderBubble={renderBubble}
-                    renderInputToolbar={renderInputToolbar} // Use our custom function
+                    renderInputToolbar={renderInputToolbar}
                     onSend={newMessages => onSend(newMessages)}
+                    renderActions={renderCustomActions}
                     user={{
                         _id: userID,
                         name: name,

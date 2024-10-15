@@ -5,7 +5,7 @@ import Start from './components/Start';
 import Chat from './components/Chat';
 import { initializeApp } from "firebase/app";
 import { getFirestore, disableNetwork, enableNetwork } from "firebase/firestore";
-import { useNetInfo } from "@react-native-community/netinfo"; // Import for tracking network status
+import { useNetInfo } from "@react-native-community/netinfo";
 
 // Firebase configuration
 const firebaseConfig = {
