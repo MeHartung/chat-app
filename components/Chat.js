@@ -4,6 +4,7 @@ import { GiftedChat, Bubble, InputToolbar } from "react-native-gifted-chat";
 import { collection, addDoc, onSnapshot, query, orderBy } from "firebase/firestore";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomActions from './CustomActions';
+import MapView from 'react-native-maps';  // Импортируем MapView для отображения карты
 import { ref, getStorage } from 'firebase/storage';
 
 const Chat = ({ route, navigation, db, isConnected }) => {
@@ -11,12 +12,10 @@ const Chat = ({ route, navigation, db, isConnected }) => {
     const [messages, setMessages] = useState([]);
     const storage = getStorage();
 
-
     const loadCachedMessages = async () => {
         const cachedMessages = await AsyncStorage.getItem('messages') || '[]';
         setMessages(JSON.parse(cachedMessages));
     };
-
 
     const cacheMessages = async (messagesToCache) => {
         try {
@@ -50,17 +49,14 @@ const Chat = ({ route, navigation, db, isConnected }) => {
         }
     }, [isConnected]);
 
-
     const onSend = (newMessages) => {
         addDoc(collection(db, "messages"), newMessages[0]);
     };
-
 
     const renderInputToolbar = (props) => {
         if (isConnected) return <InputToolbar {...props} />;
         return null;
     };
-
 
     const renderBubble = (props) => {
         return (
@@ -78,6 +74,25 @@ const Chat = ({ route, navigation, db, isConnected }) => {
         );
     };
 
+    // Добавляем renderCustomView для отображения карты, если в сообщении есть координаты
+    const renderCustomView = (props) => {
+        const { currentMessage } = props;
+
+        if (currentMessage.location) {
+            return (
+                <MapView
+                    style={{ width: 150, height: 100, borderRadius: 13, margin: 3 }}
+                    region={{
+                        latitude: currentMessage.location.latitude,
+                        longitude: currentMessage.location.longitude,
+                        latitudeDelta: 0.0922,
+                        longitudeDelta: 0.0421,
+                    }}
+                />
+            );
+        }
+        return null;
+    };
 
     const renderCustomActions = (props) => {
         return <CustomActions storage={storage} onSend={onSend} user={{ _id: userID, name }} {...props} />;
@@ -96,6 +111,7 @@ const Chat = ({ route, navigation, db, isConnected }) => {
                     renderInputToolbar={renderInputToolbar}
                     onSend={newMessages => onSend(newMessages)}
                     renderActions={renderCustomActions}
+                    renderCustomView={renderCustomView}  // Рендеринг карты в сообщении
                     user={{
                         _id: userID,
                         name: name,

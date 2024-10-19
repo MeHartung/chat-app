@@ -27,6 +27,8 @@ const CustomActions = ({ onSend, storage, user }) => {
                     case 2:
                         getLocation();
                         return;
+                    default:
+                        return;
                 }
             }
         );
@@ -45,7 +47,9 @@ const CustomActions = ({ onSend, storage, user }) => {
         const blob = await response.blob();
         uploadBytes(imageRef, blob).then(async (snapshot) => {
             const imageURL = await getDownloadURL(snapshot.ref);
-            onSend({ image: imageURL });
+            onSend([{ _id: new Date().getTime(), image: imageURL, createdAt: new Date(), user }]);
+        }).catch(error => {
+            Alert.alert("Error uploading image", error.message);
         });
     };
 
@@ -78,12 +82,7 @@ const CustomActions = ({ onSend, storage, user }) => {
         if (permissions.granted) {
             const location = await Location.getCurrentPositionAsync({});
             if (location) {
-                onSend({
-                    location: {
-                        longitude: location.coords.longitude,
-                        latitude: location.coords.latitude,
-                    },
-                });
+                onSend([{ _id: new Date().getTime(), location: { longitude: location.coords.longitude, latitude: location.coords.latitude }, createdAt: new Date(), user }]);
             }
         } else {
             Alert.alert("Permission to access location is required!");
