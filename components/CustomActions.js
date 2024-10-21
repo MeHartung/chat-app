@@ -90,7 +90,14 @@ const CustomActions = ({ onSend, storage, user }) => {
     };
 
     return (
-        <TouchableOpacity style={styles.container} onPress={onActionPress}>
+        <TouchableOpacity
+            style={styles.container}
+            accessible={true}
+            accessibilityLabel="More options"
+            accessibilityHint="You can choose to send an image, take a picture, send your geolocation or record an audio."
+            accessibilityRole="button"
+            onPress={onActionPress}
+        >
             <View style={styles.wrapper}>
                 <Text style={styles.iconText}>+</Text>
             </View>
